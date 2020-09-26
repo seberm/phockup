@@ -13,7 +13,7 @@ printer = Printer()
 ignored_files = (".DS_Store", "Thumbs.db")
 
 
-class Phockup():
+class Phockup:
     def __init__(self, input_dir, output_dir, **args):
         input_dir = os.path.expanduser(input_dir)
         output_dir = os.path.expanduser(output_dir)

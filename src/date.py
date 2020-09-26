@@ -3,7 +3,8 @@ import re
 from datetime import datetime
 import time
 
-class Date():
+
+class Date:
     def __init__(self, filename=None):
         self.filename = filename
 

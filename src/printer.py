@@ -1,7 +1,7 @@
 import sys
 
 
-class Printer(object):
+class Printer:
     def line(self, message, skip_end=False):
         if skip_end:
             print(message, end="", flush=True)
