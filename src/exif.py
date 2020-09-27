@@ -4,7 +4,7 @@ import shlex
 import sys
 
 
-class Exif(object):
+class Exif:
     def __init__(self, filename):
         self.filename = filename
 
