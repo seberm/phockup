@@ -55,7 +55,10 @@ class Date:
         if datestr and isinstance(datestr, str) and not datestr.startswith('0000'):
             parsed_date = self.from_datestring(datestr)
         else:
-            parsed_date = {'date': None, 'subseconds': ''}
+            parsed_date = {
+                'date': None,
+                'subseconds': '',
+            }
 
         if parsed_date.get("date") is not None:
             return parsed_date
@@ -68,13 +71,17 @@ class Date:
     def from_datestring(self, datestr):
         datestr = datestr.split('.')
         date = datestr[0]
+
         if len(datestr) > 1:
             subseconds = datestr[1]
         else:
             subseconds = ''
+
         search = r'(.*)([+-]\d{2}:\d{2})'
-        if re.search(search, date) is not None:
+
+        if re.search(search, date):
             date = re.sub(search, r'\1', date)
+
         try:
             parsed_date_time = self.strptime(date, "%Y:%m:%d %H:%M:%S")
         except ValueError:
@@ -82,8 +89,10 @@ class Date:
                 parsed_date_time = self.strptime(date, "%Y-%m-%d %H:%M:%S")
             except ValueError:
                 parsed_date_time = None
-        if re.search(search, subseconds) is not None:
+
+        if re.search(search, subseconds):
             subseconds = re.sub(search, r'\1', subseconds)
+
         return {
             'date': parsed_date_time,
             'subseconds': subseconds
@@ -93,8 +102,7 @@ class Date:
         # If missing datetime from EXIF data check if filename is in datetime format.
         # For this use a user provided regex if possible.
         # Otherwise assume a filename such as IMG_20160915_123456.jpg as default.
-        default_regex = re.compile(
-            r'.*[_-](?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})[_-]?(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})')
+        default_regex = re.compile(r'.*[_-](?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})[_-]?(?P<hour>\d{2})(?P<minute>\d{2})(?P<second>\d{2})')
         regex = user_regex or default_regex
         matches = regex.search(os.path.basename(self.filename))
 
