@@ -294,7 +294,7 @@ def test_process_skip_ignored_file():
     shutil.rmtree('input_ignored', ignore_errors=True)
     os.mkdir('input_ignored')
     open("input_ignored/.DS_Store", "w").close()
-    Phockup('input_ignored', 'output')
+    Phockup('input_ignored', 'output', exclude_regex=[r'\.DS_Store'])
     assert not os.path.isfile("output/unknown/.DS_Store")
     shutil.rmtree('output', ignore_errors=True)
     shutil.rmtree('input_ignored', ignore_errors=True)

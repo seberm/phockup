@@ -1,6 +1,7 @@
 import hashlib
 import os
 import re
+import fnmatch
 import shutil
 import sys
 
@@ -32,7 +33,8 @@ class Phockup:
         self.date_field = args.get('date_field', False)
         self.dry_run = args.get('dry_run', False)
         self.default_dir_name = args.get('default_dir_name', 'unknown')
-        self.exclude = args.get('exclude', [])
+        self.exclude_regex = args.get('exclude_regex', [])
+        self.exclude_unix = args.get('exclude_unix', [])
 
         self.check_directories()
         self.walk_directory()
@@ -62,8 +64,13 @@ class Phockup:
             files.sort()
             for filename in files:
 
-                # File exclusion support
-                if any(re.match(regex, filename) for regex in self.exclude):
+                # Regex file exclusion support
+                if any(re.match(regex, filename) for regex in self.exclude_regex):
+                    continue
+
+                # UNIX pattern file exclusion (case-sensitive)
+                # Ref.: https://docs.python.org/3/library/fnmatch.html
+                if any(fnmatch.fnmatchcase(filename, pattern) for pattern in self.exclude_unix):
                     continue
 
                 filepath = os.path.join(root, filename)
