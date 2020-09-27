@@ -1,6 +1,6 @@
 import shutil
 
-from src.printer import Printer
+from phockup.printer import Printer
 
 
 def check_dependencies():

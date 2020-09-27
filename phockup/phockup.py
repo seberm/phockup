@@ -5,9 +5,9 @@ import re
 import shutil
 import sys
 
-from src.date import Date
-from src.exif import Exif
-from src.printer import Printer
+from phockup.date import Date
+from phockup.exif import Exif
+from phockup.printer import Printer
 
 printer = Printer()
 ignored_files = (".DS_Store", "Thumbs.db")
