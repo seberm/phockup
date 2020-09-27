@@ -9,7 +9,6 @@ from phockup.exif import Exif
 from phockup.printer import Printer
 
 printer = Printer()
-ignored_files = (".DS_Store", "Thumbs.db")
 
 
 class Phockup:
@@ -33,6 +32,7 @@ class Phockup:
         self.date_field = args.get('date_field', False)
         self.dry_run = args.get('dry_run', False)
         self.default_dir_name = args.get('default_dir_name', 'unknown')
+        self.exclude = args.get('exclude', [])
 
         self.check_directories()
         self.walk_directory()
@@ -61,7 +61,9 @@ class Phockup:
         for root, _, files in os.walk(self.input_dir):
             files.sort()
             for filename in files:
-                if filename in ignored_files:
+
+                # File exclusion support
+                if any(re.match(regex, filename) for regex in self.exclude):
                     continue
 
                 filepath = os.path.join(root, filename)

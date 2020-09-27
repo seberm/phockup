@@ -22,6 +22,11 @@ changing the files content. It will only rename the files and place them in the 
 
 DEFAULT_DIR_FORMAT = ['%Y', '%m', '%d']
 DEFAULT_DIR_NAME = "unknown"
+DEFAULT_IGNORED_FILES = [
+    # Default windows files
+    r"\.DS_Store",
+    r"Thumbs\.db",
+]
 
 
 class CustomArgparseFormatter(
@@ -140,6 +145,15 @@ Example:
     )
 
     parser.add_argument(
+        "-e",
+        "--exclude",
+        action="append",
+        type=str,
+        help="Exclude all files specified by this regex.",
+        default=DEFAULT_IGNORED_FILES,
+    )
+
+    parser.add_argument(
         "-f",
         "--date-field",
         action="store",
@@ -185,6 +199,7 @@ To get all date fields available for a file, do:
         date_field=args.date_field,
         dry_run=args.dry_run,
         default_dir_name=args.default_dir_name,
+        exclude=args.exclude,
     )
 
 
