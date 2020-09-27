@@ -2,9 +2,9 @@ import shutil
 import sys
 import os
 from datetime import datetime
-from src.dependency import check_dependencies
-from src.exif import Exif
-from src.phockup import Phockup
+from phockup.dependency import check_dependencies
+from phockup.exif import Exif
+from phockup.phockup import Phockup
 
 
 os.chdir(os.path.dirname(__file__))

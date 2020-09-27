@@ -1,7 +1,7 @@
 import os
 import re
 from datetime import datetime
-from src.date import Date
+from phockup.date import Date
 
 
 os.chdir(os.path.dirname(__file__))
