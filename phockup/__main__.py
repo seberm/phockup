@@ -161,6 +161,12 @@ Example:
     )
 
     parser.add_argument(
+        "--exclude-file",
+        action="store",
+        help="Specify exlusion file with list of UNIX patterns. All input files which match any of these patters will be ignored. One file pattern per line.",
+    )
+
+    parser.add_argument(
         "-f",
         "--date-field",
         action="store",
@@ -206,8 +212,10 @@ To get all date fields available for a file, do:
         date_field=args.date_field,
         dry_run=args.dry_run,
         default_dir_name=args.default_dir_name,
+
         exclude_regex=args.exclude_regex,
         exclude_unix=args.exclude,
+        exclude_file=args.exclude_file,
     )
 
 

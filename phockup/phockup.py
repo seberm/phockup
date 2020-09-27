@@ -35,6 +35,7 @@ class Phockup:
         self.default_dir_name = args.get('default_dir_name', 'unknown')
         self.exclude_regex = args.get('exclude_regex', [])
         self.exclude_unix = args.get('exclude_unix', [])
+        self.exclude_file = args.get('exclude_file', None)
 
         self.check_directories()
         self.walk_directory()
@@ -72,6 +73,20 @@ class Phockup:
                 # Ref.: https://docs.python.org/3/library/fnmatch.html
                 if any(fnmatch.fnmatchcase(filename, pattern) for pattern in self.exclude_unix):
                     continue
+
+                if self.exclude_file:
+                    with open(self.exclude_file) as fd:
+                        ignore_file = False
+
+                        for pattern in fd:
+                            # Strip the '\n' from the end of file
+                            # FIXME: What about other platforms (win)
+                            if fnmatch.fnmatchcase(filename, pattern[:-1]):
+                                ignore_file = True
+                                break
+
+                        if ignore_file:
+                            continue
 
                 filepath = os.path.join(root, filename)
                 self.process_file(filepath)
