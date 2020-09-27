@@ -14,7 +14,7 @@ with open(os.path.join(_CUR_DIR, "README.md"), "r", encoding="utf-8") as f:
 setup(
     name="phockup",
     version=__version__,
-    description="TODO",
+    description="Media sorting tool to organize photos and videos from your camera in folders by year, month and day. The software will collect all files from the input directory and copy them to the output directory without changing the files content. It will only rename the files and place them in the proper directory for year, month and day.",
     long_description=readme,
     author="Ivan Dokov",
     author_email="",
