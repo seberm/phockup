@@ -193,4 +193,3 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt:
         printer.empty().line('Exiting...')
-        sys.exit(0)
