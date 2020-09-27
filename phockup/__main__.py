@@ -151,10 +151,12 @@ Example:
         help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\.jpg').",
         default=DEFAULT_IGNORED_FILES,
     )
+
+    parser.add_argument(
         "--exclude",
         action="append",
         type=str,
-        help="Exclude all files specified by this regex.",
+        help="Exclude all files where their filename matches an UNIX pattern (e.g. '*.txt'). The comparison is case-sensitive.",
         default=DEFAULT_IGNORED_FILES,
     )
 
@@ -205,6 +207,7 @@ To get all date fields available for a file, do:
         dry_run=args.dry_run,
         default_dir_name=args.default_dir_name,
         exclude_regex=args.exclude_regex,
+        exclude_unix=args.exclude,
     )
 
 
