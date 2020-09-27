@@ -9,15 +9,22 @@ class Date:
         self.filename = filename
 
     def parse(self, date):
-        date = date.replace("YYYY", "%Y")  # 2017 (year)
-        date = date.replace("YY", "%y")  # 17 (year)
-        date = date.replace("m", "%b")  # Dec (month)
-        date = date.replace("MM", "%m")  # 12 (month)
-        date = date.replace("M", "%B")  # December (month)
-        date = date.replace("DDD", "%j")  # 123 (day or year)
-        date = date.replace("DD", "%d")  # 25 (day)
-        date = date.replace("\\", os.path.sep)  # path separator
-        date = date.replace("/", os.path.sep)  # path separator
+        replacements = [
+            ("YYYY", "%Y",), # 2017 (year)
+            ("YY", "%y",),   # 17 (year)
+            ("m", "%b",),    # Dec (month)
+            ("MM", "%m",),   # 12 (month)
+            ("M", "%B",),    # December (month)
+            ("DDD", "%j",),  # 123 (day or year)
+            ("DD", "%d",),   # 25 (day)
+
+            ("\\", os.path.sep,),  # path separator
+            ("/", os.path.sep,),   # path separator
+        ]
+
+        for input_format, fmt_string in replacements:
+            date = date.replace(input_format, fmt_string)
+
         return date
 
     def strptime(self, date, date_format):
