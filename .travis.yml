@@ -23,6 +23,10 @@ matrix:
     - python: 3.6
       env: TOXENV=py36
 
+  allow_failures:
+    # For now, allow the linters to fail
+    - env: TOXENV=linters
+
 script:
   - tox
 
