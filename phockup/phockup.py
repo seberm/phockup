@@ -182,33 +182,37 @@ class Phockup:
 
         return fullpath
 
-    def get_file_name(self, original_filename, date):
+    def get_file_name(self, original_filename, date=None):
         """
         Generate file name based on exif data unless it is missing or
         original filenames are required. Then use original file name.
         """
-        log.debug("Determining new filename for: %s", original_filename)
-
         if self.original_filenames:
             log.debug("Original filenames flag active, returning original name.")
             return os.path.basename(original_filename)
 
-        filename = [
-            '%04d' % date['date'].year,
-            '%02d' % date['date'].month,
-            '%02d' % date['date'].day,
-            '-',
-            '%02d' % date['date'].hour,
-            '%02d' % date['date'].minute,
-            '%02d' % date['date'].second,
-        ]
+        if date and date.get("date") is not None:
+            log.debug("Determining new filename based on EXIF date for file: %s", original_filename)
 
-        if date['subseconds']:
-            filename.append(date['subseconds'])
+            filename = [
+                '%04d' % date['date'].year,
+                '%02d' % date['date'].month,
+                '%02d' % date['date'].day,
+                '-',
+                '%02d' % date['date'].hour,
+                '%02d' % date['date'].minute,
+                '%02d' % date['date'].second,
+            ]
 
-        new_filename = ''.join(filename) + os.path.splitext(original_filename)[1]
-        log.debug("Determined new filename for %s => %s", original_filename, new_filename)
-        return new_filename
+            if date['subseconds']:
+                filename.append(date['subseconds'])
+
+            new_filename = ''.join(filename) + os.path.splitext(original_filename)[1]
+            log.debug("Determined new filename for %s => %s", original_filename, new_filename)
+            return new_filename
+
+        log.debug("Filename was not possible to determine from EXIF, returning original name.")
+        return os.path.basename(original_filename)
 
     def process_file(self, filename):
         """
