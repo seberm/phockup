@@ -18,11 +18,6 @@ class Phockup:
         input_files = [os.path.expanduser(i_file) for i_file in input_files]
         output_dir = os.path.expanduser(output_dir)
 
-        if input_dir.endswith(os.path.sep):
-            input_dir = input_dir[:-1]
-        if output_dir.endswith(os.path.sep):
-            output_dir = output_dir[:-1]
-
         self.input_files = input_files
         self.output_dir = output_dir
         self.dir_format = args.get('dir_format', os.path.sep.join(['%Y', '%m', '%d']))
