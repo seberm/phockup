@@ -9,8 +9,18 @@ install:
 
 matrix:
   include:
-    - stage: Tests (Python 3.6)
-      python: 3.6
+    - stage: Lint and Code Style
+      python: 3.8
+      env: TOXENV=linters
+
+    - stage: Tests
+      python: 3.8
+      env: TOXENV=py38
+
+    - python: 3.7
+      env: TOXENV=py37
+
+    - python: 3.6
       env: TOXENV=py36
 
 script:
