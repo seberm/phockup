@@ -1,61 +1,64 @@
 #import shutil
-#import sys
+import sys
 import os
+import errno
 #from datetime import datetime
-#from phockup.dependency import check_dependencies
+
+import pytest
+
+from phockup.dependency import check_dependencies
+from phockup import PhockupError
+from phockup.phockup import Phockup
 #from phockup.exif import Exif
-#from phockup.phockup import Phockup
+
 
 
 os.chdir(os.path.dirname(__file__))
 
 
-# def test_check_dependencies(mocker):
-#     mocker.patch('shutil.which', return_value='exiftool')
-#     mocker.patch('sys.exit')
-#
-#     check_dependencies()
-#     assert not sys.exit.called
-#
-#
-# def test_check_dependencies_missing(mocker):
-#     mocker.patch('shutil.which', return_value=None)
-#     mocker.patch('sys.exit')
-#
-#     check_dependencies()
-#     sys.exit.assert_called_once_with(1)
-#
-#
-# def test_exit_if_missing_input_directory(mocker):
-#     mocker.patch('os.makedirs')
-#     mocker.patch('sys.exit')
-#     Phockup(['in'], 'out').process()
-#     sys.exit.assert_called_once_with(1)
-#
-#
+def test_check_dependencies(mocker):
+    mocker.patch('shutil.which', return_value='exiftool')
+
+    check_dependencies()
+
+
+def test_check_dependencies_missing(mocker):
+    mocker.patch('shutil.which', return_value=None)
+
+    with pytest.raises(PhockupError):
+        check_dependencies()
+
+
+def test_exit_if_missing_input_directory(mocker):
+    mocker.patch('os.makedirs')
+    mocker.patch('sys.exit')
+
+    with pytest.raises(PhockupError, match=r"There was no valid file on the input, exiting\."):
+        Phockup('out').process(['in'])
+
+
 # #def test_removing_trailing_slash_for_input_output(mocker):
 # #    mocker.patch('os.makedirs')
 # #    mocker.patch('sys.exit')
 # #    phockup = Phockup(['in/'], 'out/').process()
 # #    assert phockup.input_dir == 'in'
 # #    assert phockup.output_dir == 'out'
-#
-#
-# def test_error_for_missing_input_dir(mocker, capsys):
-#     mocker.patch('sys.exit')
-#     Phockup([], 'out').process()
-#     sys.exit.assert_called_once_with(1)
-#
-#
-# def test_error_for_no_write_access_when_creating_output_dir(mocker, capsys):
-#     mocker.patch.object(Phockup, 'walk_directory')
-#     mocker.patch.object(Phockup, 'process_file')
-#     mocker.patch('os.makedirs', side_effect=Exception("No write access"))
-#     mocker.patch('sys.exit')
-#     Phockup(['input'], '/root/phockup').process()
-#     sys.exit.assert_called_once_with(1)
-#
-#
+
+
+def test_error_for_missing_input_dir(mocker, capsys):
+    with pytest.raises(PhockupError, match=r"No Input files or directories were provided\."):
+        Phockup('out').process([])
+
+
+def test_error_for_no_write_access_when_creating_output_dir(mocker, capsys):
+    mocker.patch.object(Phockup, 'walk_directory')
+    mocker.patch.object(Phockup, 'process_file')
+    mocker.patch('os.makedirs', side_effect=OSError(errno.EACCES))
+
+    with pytest.raises(PhockupError, match=r"There was an error when creating directory"):
+        Phockup('/root/phockup').process(['input'])
+
+
 # def test_walking_directory():
 #     shutil.rmtree('output', ignore_errors=True)
 #     Phockup(['input'], 'output').process()
