@@ -18,6 +18,16 @@ The software will collect all files from the input and copy them to the output d
 changing the file content. It will only rename the files and place them in the proper directory for year, month and day.
 """
 
+
+PROGRAM_EPILOG = """
+--------------------------------------------------------------------------------
+Examle usage:
+--------------------------------------------------------------------------------
+$ phockup ~/Pictures/camera ~/Pictures/sorted
+$ phockup ~/Pictures/*.jpg ~/Videos/vacation ~/photo.jpg ~/Pictures/sorted
+$ phockup --dry-run --exclude '*.mp4' input-dir/ output-dir/
+"""
+
 DEFAULT_DIR_FORMAT = ['%Y', '%m', '%d']
 DEFAULT_DIR_NAME = "unknown"
 DEFAULT_IGNORED_FILES = [
@@ -37,9 +47,10 @@ class CustomArgparseFormatter(
 def main():
     check_dependencies()
 
-
     parser = argparse.ArgumentParser(
         description=PROGRAM_DESCRIPTION,
+        epilog=PROGRAM_EPILOG,
+        allow_abbrev=False,
         formatter_class=CustomArgparseFormatter,
     )
     parser.version = "v%s" % __version__
