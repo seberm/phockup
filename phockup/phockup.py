@@ -15,6 +15,19 @@ log = logging.getLogger(__name__)
 
 
 class Phockup:
+
+    @classmethod
+    def is_image_or_video(self, mimetype):
+        """
+        Use mimetype to determine if the file is an image or video
+        """
+        log.debug("Checking MIME type. Current MIME type: %s", mimetype)
+        pattern = re.compile('^(image/.+|video/.+|application/vnd.adobe.photoshop)$')
+        if pattern.match(mimetype):
+            return True
+
+        return False
+
     def __init__(self, output_dir, **args):
         output_dir = os.path.expanduser(output_dir)
 
@@ -144,17 +157,6 @@ class Phockup:
             for block in iter(lambda: f.read(block_size), b''):
                 sha256.update(block)
         return sha256.hexdigest()
-
-    def is_image_or_video(self, mimetype):
-        """
-        Use mimetype to determine if the file is an image or video
-        """
-        log.debug("Checking MIME type. Current MIME type: %s", mimetype)
-        pattern = re.compile('^(image/.+|video/.+|application/vnd.adobe.photoshop)$')
-        if pattern.match(mimetype):
-            return True
-
-        return False
 
     def get_output_dir(self, date=None):
         """
