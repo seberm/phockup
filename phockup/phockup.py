@@ -49,7 +49,7 @@ class Phockup:
             elif os.path.isfile(i_file):
                 self.process_file(i_file)
             else:
-                printer.error('Input file "%s" is not regular file or directory, continuing ...' % i_file)
+                printer.line('Input file "%s" is not regular file or directory, continuing ...' % i_file)
                 continue
 
 
