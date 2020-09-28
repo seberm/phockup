@@ -6,7 +6,8 @@ import logging
 from phockup.date import Date
 from phockup.dependency import check_dependencies
 from phockup.phockup import Phockup
-from phockup.printer import Printer
+
+from phockup import PhockupError
 
 
 __version__ = "1.5.11"
@@ -14,7 +15,6 @@ __version__ = "1.5.11"
 
 log = logging.getLogger(__name__)
 
-printer = Printer()
 
 DEFAULT_LOGGING_MODE = "WARNING"
 
@@ -248,11 +248,18 @@ To get all date fields available for a file, do:
         exclude_unix=args.exclude,
         exclude_file=args.exclude_file,
     )
-    pho()
+
+    try:
+        pho.process()
+    except PhockupError as e:
+        log.error(e)
+        return 99
+
+    return 0
 
 
 if __name__ == '__main__':
     try:
-        main()
+        sys.exit(main())
     except KeyboardInterrupt:
         log.warning("Exiting...")

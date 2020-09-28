@@ -3,9 +3,10 @@ import os
 import re
 import fnmatch
 import shutil
-import sys
+import errno
 import logging
 
+from phockup import PhockupError
 from phockup.date import Date
 from phockup.exif import Exif
 
@@ -54,7 +55,6 @@ class Phockup:
                 log.warning("Input file '%s' is not regular file or directory, continuing ...", i_file)
                 continue
 
-
     def check_directories(self):
         """
         Check if all input files/dirs and output directories exist.
@@ -62,10 +62,7 @@ class Phockup:
         """
         log.debug("Checking input files and directories")
         if not self.input_files:
-            log.error("No Input files or directories were provided.")
-            # FIXME: Raise a progrem exception here
-            sys.exit(1)
-            return
+            raise PhockupError("No Input files or directories were provided.")
 
         # Create the output_dir when there is at least *one* valid file or directory
         # on the input
@@ -73,28 +70,27 @@ class Phockup:
 
         for i_file in self.input_files:
             if not os.path.exists(i_file):
-                log.warning("Input file does not exist or cannot be accessed: %s", i_file)
+                log.warning("Input file does not exist or cannot be accessed: %s, continuing ...", i_file)
                 continue
 
             at_least_one_valid_file = True
 
         if not at_least_one_valid_file:
-            log.error("There was no valid file on the input, exiting.")
-            # FIXME: Raise a progrem exception here
-            sys.exit(1)
+            raise PhockupError("There was no valid file on the input, exiting.")
 
         log.debug("Ensuring output directory: %s", self.output_dir)
-        if not os.path.exists(self.output_dir) and at_least_one_valid_file:
-            log.info("Output directory does not exist, creating now: %s", self.output_dir)
+#        if not os.path.exists(self.output_dir) and at_least_one_valid_file:
+        if at_least_one_valid_file:
             try:
                 if not self.dry_run:
                     os.makedirs(self.output_dir)
-            except Exception:
-                # FIXME: catch the correct exception, raise program exception here.
-                #        Also fix a message of following log message according
-                #        to the exception type.
-                log.error("Cannot create output directory. No write access!")
-                sys.exit(1)
+                    log.info("Output directory was created: %s", self.output_dir)
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    log.info("Output directory already exist: %s. Using existing directory.", self.output_dir)
+                else:
+                    log.error(e)
+                    raise PhockupError("There was an error when creating directory: %s" % self.output_dir)
 
     def walk_directory(self, i_directory):
         """
@@ -156,23 +152,28 @@ class Phockup:
 
         return False
 
-    def get_output_dir(self, date):
+    def get_output_dir(self, date=None):
         """
-        Generate output directory path based on the extracted date and formatted using dir_format
-        If date is missing from the exifdata the file is going to specified "unknown" directory
-        unless user included a regex from filename or uses timestamp
+        Generate output directory path based on the extracted date and formatted
+        using dir_format. If date is None (probably missing from the EXIF data)
+        the file is going to directory specified by default-dir-name option,
+        unless user included a regex from filename or uses timestamp.
         """
-        try:
-            path = [self.output_dir, date['date'].date().strftime(self.dir_format)]
-
-        # FIXME: program should handle *specific* exception or crash!
-        except:
-            path = [self.output_dir, self.default_dir_name]
+        path = [self.output_dir, self.default_dir_name]
+        if date:
+            path = [self.output_dir, date.date().strftime(self.dir_format)]
 
         fullpath = os.path.sep.join(path)
 
-        if not os.path.isdir(fullpath) and not self.dry_run:
-            os.makedirs(fullpath)
+        try:
+            if not self.dry_run:
+                os.makedirs(fullpath)
+        except OSError as e:
+            if e.errno == errno.EEXIST:
+                log.debug("Child directory already exist: %s. Using existing directory.", fullpath)
+            else:
+                log.error(e)
+                raise PhockupError("There was an error when creating directory: %s" % fullpath)
 
         return fullpath
 
@@ -187,28 +188,22 @@ class Phockup:
             log.debug("Original filenames flag active, returning original name.")
             return os.path.basename(original_filename)
 
-        try:
-            filename = [
-                '%04d' % date['date'].year,
-                '%02d' % date['date'].month,
-                '%02d' % date['date'].day,
-                '-',
-                '%02d' % date['date'].hour,
-                '%02d' % date['date'].minute,
-                '%02d' % date['date'].second,
-            ]
+        filename = [
+            '%04d' % date['date'].year,
+            '%02d' % date['date'].month,
+            '%02d' % date['date'].day,
+            '-',
+            '%02d' % date['date'].hour,
+            '%02d' % date['date'].minute,
+            '%02d' % date['date'].second,
+        ]
 
-            if date['subseconds']:
-                filename.append(date['subseconds'])
+        if date['subseconds']:
+            filename.append(date['subseconds'])
 
-            new_filename = ''.join(filename) + os.path.splitext(original_filename)[1]
-            log.debug("Determined new filename for %s => %s", original_filename, new_filename)
-            return new_filename
-
-        # FIXME: program should handle *specific* exception or crash!
-        except:
-            log.error("An error occoured when determining new filename for %s! Returning original filename", original_filename)
-            return os.path.basename(original_filename)
+        new_filename = ''.join(filename) + os.path.splitext(original_filename)[1]
+        log.debug("Determined new filename for %s => %s", original_filename, new_filename)
+        return new_filename
 
     def process_file(self, filename):
         """
@@ -217,7 +212,7 @@ class Phockup:
         """
         log.debug("Processing file: %s", filename)
         if str.endswith(filename, '.xmp'):
-            log.info("Current file is '.xmp' file and it is going to be handled separately: %s", filename)
+            log.debug("Current file is '.xmp' file and it is going to be handled separately: %s", filename)
             return None
 
         output, target_file_name, target_file_path = self.get_file_name_and_path(filename)
@@ -263,13 +258,13 @@ class Phockup:
         exif_data = Exif(filename).data()
         if exif_data and 'MIMEType' in exif_data and self.is_image_or_video(exif_data['MIMEType']):
             date = Date(filename).from_exif(exif_data, self.timestamp, self.date_regex, self.date_field)
-            output = self.get_output_dir(date)
+            output = self.get_output_dir(date["date"])
             target_file_name = self.get_file_name(filename, date)
             if not self.original_filenames:
                 target_file_name = target_file_name.lower()
             target_file_path = os.path.sep.join([output, target_file_name])
         else:
-            output = self.get_output_dir(False)
+            output = self.get_output_dir()
             target_file_name = os.path.basename(filename)
             target_file_path = os.path.sep.join([output, target_file_name])
 

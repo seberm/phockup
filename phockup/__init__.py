@@ -1,0 +1,3 @@
+
+class PhockupError(Exception):
+    pass
