@@ -1,7 +1,7 @@
 import argparse
 import os
 import re
-import sys
+import logging
 
 from phockup.date import Date
 from phockup.dependency import check_dependencies
@@ -11,7 +11,12 @@ from phockup.printer import Printer
 
 __version__ = "1.5.11"
 
+
+log = logging.getLogger(__name__)
+
 printer = Printer()
+
+DEFAULT_LOGGING_MODE = "WARNING"
 
 PROGRAM_DESCRIPTION = """Media sorting tool to organize photos and videos from your camera in folders by year, month and day.
 The software will collect all files from the input and copy them to the output directory without
@@ -59,6 +64,15 @@ def main():
         "-v",
         "--version",
         action="version",
+    )
+
+    parser.add_argument(
+        "--log",
+        action="store",
+        type=str.upper,
+        help="Logging level.",
+        choices=["DEBUG", "WARNING", "INFO", "ERROR", "EXCEPTION"],
+        default=DEFAULT_LOGGING_MODE,
     )
 
     parser.add_argument(
@@ -157,7 +171,7 @@ Example:
         "--exclude-regex",
         action="append",
         type=str,
-        help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\.jpg').",
+        help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\\.jpg').",
         default=DEFAULT_IGNORED_FILES,
     )
 
@@ -211,6 +225,12 @@ To get all date fields available for a file, do:
 
     args = parser.parse_args()
 
+    # Setup the logging
+    logging.basicConfig(level=args.log)
+
+    if args.dry_run:
+        log.warning("DRY-RUN: Dry-run mode active! Not making any changes.")
+
     pho = Phockup(
         args.input_files,
         args.output_dir,
@@ -235,4 +255,4 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        printer.empty().line('Exiting...')
+        log.warning("Exiting...")

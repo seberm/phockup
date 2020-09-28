@@ -4,17 +4,19 @@ import re
 import fnmatch
 import shutil
 import sys
+import logging
 
 from phockup.date import Date
 from phockup.exif import Exif
-from phockup.printer import Printer
 
-printer = Printer()
+
+log = logging.getLogger(__name__)
 
 
 class Phockup:
     def __init__(self, input_files, output_dir, **args):
         # Expand all input files
+        # FIXME: remove input_files argument, add it into self.process(input_files) - improve the API
         input_files = [os.path.expanduser(i_file) for i_file in input_files]
         output_dir = os.path.expanduser(output_dir)
 
@@ -49,7 +51,7 @@ class Phockup:
             elif os.path.isfile(i_file):
                 self.process_file(i_file)
             else:
-                printer.line('Input file "%s" is not regular file or directory, continuing ...' % i_file)
+                log.warning("Input file '%s' is not regular file or directory, continuing ...", i_file)
                 continue
 
 
@@ -58,22 +60,41 @@ class Phockup:
         Check if all input files/dirs and output directories exist.
         If output does not exists it tries to create it or it exits with an error.
         """
+        log.debug("Checking input files and directories")
         if not self.input_files:
-            printer.error('Input file/directory was not provided.')
+            log.error("No Input files or directories were provided.")
+            # FIXME: Raise a progrem exception here
+            sys.exit(1)
             return
+
+        # Create the output_dir when there is at least *one* valid file or directory
+        # on the input
+        at_least_one_valid_file = False
 
         for i_file in self.input_files:
             if not os.path.exists(i_file):
-                printer.error('Input file "%s" does not exist or cannot be accessed' % i_file)
-                return
+                log.warning("Input file does not exist or cannot be accessed: %s", i_file)
+                continue
 
-        if not os.path.exists(self.output_dir):
-            printer.line('Output directory "%s" does not exist, creating now' % self.output_dir)
+            at_least_one_valid_file = True
+
+        if not at_least_one_valid_file:
+            log.error("There was no valid file on the input, exiting.")
+            # FIXME: Raise a progrem exception here
+            sys.exit(1)
+
+        log.debug("Ensuring output directory: %s", self.output_dir)
+        if not os.path.exists(self.output_dir) and at_least_one_valid_file:
+            log.info("Output directory does not exist, creating now: %s", self.output_dir)
             try:
                 if not self.dry_run:
                     os.makedirs(self.output_dir)
             except Exception:
-                printer.error('Cannot create output directory. No write access!')
+                # FIXME: catch the correct exception, raise program exception here.
+                #        Also fix a message of following log message according
+                #        to the exception type.
+                log.error("Cannot create output directory. No write access!")
+                sys.exit(1)
 
     def walk_directory(self, i_directory):
         """
@@ -85,11 +106,13 @@ class Phockup:
 
                 # Regex file exclusion support
                 if any(re.match(regex, filename) for regex in self.exclude_regex):
+                    log.debug("The file %s matched exclusion regex, excluding ...", filename)
                     continue
 
                 # UNIX pattern file exclusion (case-sensitive)
                 # Ref.: https://docs.python.org/3/library/fnmatch.html
                 if any(fnmatch.fnmatchcase(filename, pattern) for pattern in self.exclude_unix):
+                    log.debug("The file %s matched exclusion UNIX pattern, excluding ...", filename)
                     continue
 
                 if self.exclude_file:
@@ -100,6 +123,7 @@ class Phockup:
                             # Strip the '\n' from the end of file
                             # FIXME: What about other platforms (win)
                             if fnmatch.fnmatchcase(filename, pattern[:-1]):
+                                log.debug("The file %s matched UNIX pattern (%s) in exclusion file (%s), excluding ...", filename, pattern[:-1], self.exclude_file)
                                 ignore_file = True
                                 break
 
@@ -125,9 +149,11 @@ class Phockup:
         """
         Use mimetype to determine if the file is an image or video
         """
+        log.debug("Checking MIME type. Current MIME type: %s", mimetype)
         pattern = re.compile('^(image/.+|video/.+|application/vnd.adobe.photoshop)$')
         if pattern.match(mimetype):
             return True
+
         return False
 
     def get_output_dir(self, date):
@@ -138,6 +164,8 @@ class Phockup:
         """
         try:
             path = [self.output_dir, date['date'].date().strftime(self.dir_format)]
+
+        # FIXME: program should handle *specific* exception or crash!
         except:
             path = [self.output_dir, self.default_dir_name]
 
@@ -151,9 +179,12 @@ class Phockup:
     def get_file_name(self, original_filename, date):
         """
         Generate file name based on exif data unless it is missing or
-        original filenames are required. Then use original file name
+        original filenames are required. Then use original file name.
         """
+        log.debug("Determining new filename for: %s", original_filename)
+
         if self.original_filenames:
+            log.debug("Original filenames flag active, returning original name.")
             return os.path.basename(original_filename)
 
         try:
@@ -170,8 +201,13 @@ class Phockup:
             if date['subseconds']:
                 filename.append(date['subseconds'])
 
-            return ''.join(filename) + os.path.splitext(original_filename)[1]
+            new_filename = ''.join(filename) + os.path.splitext(original_filename)[1]
+            log.debug("Determined new filename for %s => %s", original_filename, new_filename)
+            return new_filename
+
+        # FIXME: program should handle *specific* exception or crash!
         except:
+            log.error("An error occoured when determining new filename for %s! Returning original filename", original_filename)
             return os.path.basename(original_filename)
 
     def process_file(self, filename):
@@ -179,10 +215,10 @@ class Phockup:
         Process the file using the selected strategy
         If file is .xmp skip it so process_xmp method can handle it
         """
+        log.debug("Processing file: %s", filename)
         if str.endswith(filename, '.xmp'):
+            log.info("Current file is '.xmp' file and it is going to be handled separately: %s", filename)
             return None
-
-        printer.line(filename, True)
 
         output, target_file_name, target_file_path = self.get_file_name_and_path(filename)
 
@@ -192,7 +228,7 @@ class Phockup:
         while True:
             if os.path.isfile(target_file):
                 if self.checksum(filename) == self.checksum(target_file):
-                    printer.line(' => skipped, duplicated file %s' % target_file)
+                    log.warning('%s => skipped, duplicated file %s', filename, target_file)
                     break
             else:
                 if self.move:
@@ -200,7 +236,7 @@ class Phockup:
                         if not self.dry_run:
                             shutil.move(filename, target_file)
                     except FileNotFoundError:
-                        printer.line(' => skipped, no such file or directory')
+                        log.warning('%s => skipped, no such file or directory', filename)
                         break
                 elif self.link and not self.dry_run:
                     os.link(filename, target_file)
@@ -209,10 +245,10 @@ class Phockup:
                         if not self.dry_run:
                             shutil.copy2(filename, target_file)
                     except FileNotFoundError:
-                        printer.line(' => skipped, no such file or directory')
+                        log.warning('%s => skipped, no such file or directory', filename)
                         break
 
-                printer.line(' => %s' % target_file)
+                log.info('%s => %s', filename, target_file)
                 self.process_xmp(filename, target_file_name, suffix, output)
                 break
 
@@ -239,10 +275,11 @@ class Phockup:
 
         return output, target_file_name, target_file_path
 
-    def process_xmp(self, original_filename, file_name, suffix, output):
+    def process_xmp(self, original_filename, target_file_name, suffix, output):
         """
         Process xmp files. These are meta data for RAW images
         """
+        log.debug("XMP: processing all '.xmp' files for: %s", original_filename)
         xmp_original_with_ext = original_filename + '.xmp'
         xmp_original_without_ext = os.path.splitext(original_filename)[0] + '.xmp'
 
@@ -251,15 +288,15 @@ class Phockup:
         xmp_files = {}
 
         if os.path.isfile(xmp_original_with_ext):
-            xmp_target = '%s%s.xmp' % (file_name, suffix)
+            xmp_target = '%s%s.xmp' % (target_file_name, suffix)
             xmp_files[xmp_original_with_ext] = xmp_target
         if os.path.isfile(xmp_original_without_ext):
-            xmp_target = '%s%s.xmp' % (os.path.splitext(file_name)[0], suffix)
+            xmp_target = '%s%s.xmp' % (os.path.splitext(target_file_name)[0], suffix)
             xmp_files[xmp_original_without_ext] = xmp_target
 
         for original, target in xmp_files.items():
             xmp_path = os.path.sep.join([output, target])
-            printer.line('%s => %s' % (original, xmp_path))
+            log.info("%s => %s", original, xmp_path)
 
             if not self.dry_run:
                 if self.move:
