@@ -16,8 +16,8 @@ __version__ = "1.5.11"
 printer = Printer()
 
 PROGRAM_DESCRIPTION = """Media sorting tool to organize photos and videos from your camera in folders by year, month and day.
-The software will collect all files from the input directory and copy them to the output directory without
-changing the files content. It will only rename the files and place them in the proper directory for year, month and day.
+The software will collect all files from the input and copy them to the output directory without
+changing the file content. It will only rename the files and place them in the proper directory for year, month and day.
 """
 
 DEFAULT_DIR_FORMAT = ['%Y', '%m', '%d']
@@ -84,9 +84,9 @@ Example:
         "-m",
         "--move",
         action="store_true",
-        help="""Instead of copying the process will move all files from the INPUTDIR to the OUTPUTDIR.
+        help="""Instead of copying the process will move all files from the input to the OUTPUTDIR.
 This is useful when working with a big collection of files and the
-remaining free space is not enough to make a copy of the INPUTDIR.
+remaining free space is not enough to make a copy of the input.
         """,
     )
 
@@ -94,8 +94,8 @@ remaining free space is not enough to make a copy of the INPUTDIR.
         "-l",
         "--link",
         action="store_true",
-        help="""Instead of copying the process will make hard links to all files in INPUTDIR and place them in the OUTPUTDIR.
-This is useful when working with working structure and want to create YYYY/MM/DD structure to point to same files.
+        help="""Instead of copying the process will make hard links to all input files and place them in the OUTPUTDIR.
+This is useful when working with working structure and want to create YYYY/MM/DD structure to point to the *same* files.
         """,
     )
 
@@ -103,7 +103,7 @@ This is useful when working with working structure and want to create YYYY/MM/DD
         "-o",
         "--original-names",
         action="store_true",
-        help="Organize the files in selected format or using the default year/month/day format but keep original filenames.",
+        help="Organize the files in selected format or using the default year/month/day format but keep the original filenames.",
     )
 
     parser.add_argument(
@@ -192,12 +192,12 @@ To get all date fields available for a file, do:
         action="store",
         nargs="+",
         metavar="INPUTFILE",
-        help="Specify the source directory where your photos are located.",
+        help="Specify the input file(s) or directory(ies) where your photos or videos are located.",
     )
     parser.add_argument(
         "output_dir",
         metavar="OUTPUTDIR",
-        help="Specify the output directory where your photos should be exported.",
+        help="Specify the output directory where your photos and videos should be exported.",
     )
 
     args = parser.parse_args()
