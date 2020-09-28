@@ -23,6 +23,7 @@ def test_get_date_from_exif():
         "subseconds": ""
     }
 
+
 def test_get_date_from_custom_date_field():
     assert Date().from_exif({
         "CustomField": "2017:01:01 01:01:01"
@@ -30,6 +31,7 @@ def test_get_date_from_custom_date_field():
         "date": datetime(2017, 1, 1, 1, 1, 1),
         "subseconds": ""
     }
+
 
 def test_get_date_from_exif_strip_timezone():
     assert Date().from_exif({
@@ -121,6 +123,7 @@ def test_get_date_custom_regex_no_match():
     """
     date_regex = re.compile(r"(?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})[_-]?(?P<hour>\d{2})\.(?P<minute>\d{2})\.(?P<second>\d{2})")
     assert Date("Foo.jpg").from_exif({}, False, date_regex) is None
+
 
 def test_get_date_custom_regex_optional_time():
     """

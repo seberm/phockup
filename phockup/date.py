@@ -1,7 +1,6 @@
 import os
 import re
 from datetime import datetime
-import time
 
 
 class Date:
@@ -10,13 +9,13 @@ class Date:
 
     def parse(self, date):
         replacements = [
-            ("YYYY", "%Y",), # 2017 (year)
-            ("YY", "%y",),   # 17 (year)
-            ("m", "%b",),    # Dec (month)
-            ("MM", "%m",),   # 12 (month)
-            ("M", "%B",),    # December (month)
-            ("DDD", "%j",),  # 123 (day or year)
-            ("DD", "%d",),   # 25 (day)
+            ("YYYY", "%Y",),  # 2017 (year)
+            ("YY", "%y",),    # 17 (year)
+            ("m", "%b",),     # Dec (month)
+            ("MM", "%m",),    # 12 (month)
+            ("M", "%B",),     # December (month)
+            ("DDD", "%j",),   # 123 (day or year)
+            ("DD", "%d",),    # 25 (day)
 
             ("\\", os.path.sep,),  # path separator
             ("/", os.path.sep,),   # path separator
@@ -120,13 +119,12 @@ class Date:
                     'subseconds': ''
                 }
 
-        if timestamp: return self.from_timestamp()
+        if timestamp:
+            return self.from_timestamp()
 
     def from_timestamp(self):
         date = datetime.fromtimestamp(os.path.getmtime(self.filename))
         return {
             'date': date,
-            'subseconds': ''
+            'subseconds': '',
         }
-
-

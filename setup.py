@@ -30,7 +30,7 @@ setup(
         ]
     },
     options={
-        "build_scripts": { },
+        "build_scripts": {},
     },
     classifiers=[
         "Natural Language :: English",
