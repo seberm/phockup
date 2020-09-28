@@ -200,7 +200,7 @@ To get all date fields available for a file, do:
 
     args = parser.parse_args()
 
-    return Phockup(
+    pho = Phockup(
         args.input_dir,
         args.output_dir,
         dir_format=os.path.sep.join(DEFAULT_DIR_FORMAT),
@@ -217,6 +217,7 @@ To get all date fields available for a file, do:
         exclude_unix=args.exclude,
         exclude_file=args.exclude_file,
     )
+    pho()
 
 
 if __name__ == '__main__':

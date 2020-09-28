@@ -37,6 +37,10 @@ class Phockup:
         self.exclude_unix = args.get('exclude_unix', [])
         self.exclude_file = args.get('exclude_file', None)
 
+    def __call__(self):
+        return self.process()
+
+    def process(self):
         self.check_directories()
         self.walk_directory()
 
