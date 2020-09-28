@@ -1,0 +1,12 @@
+[run]
+branch = True
+source =
+    phockup
+
+[paths]
+source =
+    phockup/
+    .tox/*/lib/python*/site-packages/phockup
+    .tox/pypy/site-packages/phockup
+
+[report]
