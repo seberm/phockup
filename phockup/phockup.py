@@ -58,6 +58,10 @@ class Phockup:
         Check if all input files/dirs and output directories exist.
         If output does not exists it tries to create it or it exits with an error.
         """
+        if not self.input_files:
+            printer.error('Input file/directory was not provided.')
+            return
+
         for i_file in self.input_files:
             if not os.path.exists(i_file):
                 printer.error('Input file "%s" does not exist or cannot be accessed' % i_file)
