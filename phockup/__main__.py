@@ -3,7 +3,6 @@
 import argparse
 import os
 import re
-import sys
 import logging
 
 from phockup.date import Date
@@ -44,7 +43,6 @@ class CustomArgparseFormatter(
 
 def main():
     check_dependencies()
-
 
     parser = argparse.ArgumentParser(
         description=PROGRAM_DESCRIPTION,
@@ -163,7 +161,7 @@ Example:
         "--exclude-regex",
         action="append",
         type=str,
-        help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\.jpg').",
+        help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\\.jpg').",
         default=DEFAULT_IGNORED_FILES,
     )
 
@@ -220,6 +218,9 @@ To get all date fields available for a file, do:
     # Setup the logging
     logging.basicConfig(level=args.log)
 
+    if args.dry_run:
+        log.warning("DRY-RUN: Dry-run mode active! Not making any changes.")
+
     pho = Phockup(
         args.input_files,
         args.output_dir,
@@ -244,4 +245,4 @@ if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        printer.empty().line('Exiting...')
+        log.warning("Exiting...")
