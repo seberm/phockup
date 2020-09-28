@@ -255,7 +255,8 @@ class Phockup:
         """
         Returns target file name and path
         """
-        exif_data = Exif(filename).data()
+        exif_data = Exif(filename).metadata
+
         if exif_data and 'MIMEType' in exif_data and self.is_image_or_video(exif_data['MIMEType']):
             date = Date(filename).from_exif(exif_data, self.timestamp, self.date_regex, self.date_field)
             output = self.get_output_dir(date["date"])
