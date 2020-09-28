@@ -188,8 +188,10 @@ To get all date fields available for a file, do:
     )
 
     parser.add_argument(
-        "input_dir",
-        metavar="INPUTDIR",
+        "input_files",
+        action="store",
+        nargs="+",
+        metavar="INPUTFILE",
         help="Specify the source directory where your photos are located.",
     )
     parser.add_argument(
@@ -201,7 +203,7 @@ To get all date fields available for a file, do:
     args = parser.parse_args()
 
     pho = Phockup(
-        args.input_dir,
+        args.input_files,
         args.output_dir,
         dir_format=os.path.sep.join(DEFAULT_DIR_FORMAT),
         move=args.move,

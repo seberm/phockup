@@ -13,8 +13,9 @@ printer = Printer()
 
 
 class Phockup:
-    def __init__(self, input_dir, output_dir, **args):
-        input_dir = os.path.expanduser(input_dir)
+    def __init__(self, input_files, output_dir, **args):
+        # Expand all input files
+        input_files = [os.path.expanduser(i_file) for i_file in input_files]
         output_dir = os.path.expanduser(output_dir)
 
         if input_dir.endswith(os.path.sep):
@@ -22,7 +23,7 @@ class Phockup:
         if output_dir.endswith(os.path.sep):
             output_dir = output_dir[:-1]
 
-        self.input_dir = input_dir
+        self.input_files = input_files
         self.output_dir = output_dir
         self.dir_format = args.get('dir_format', os.path.sep.join(['%Y', '%m', '%d']))
         self.move = args.get('move', False)
@@ -41,18 +42,32 @@ class Phockup:
         return self.process()
 
     def process(self):
+        """
+        Check input data and ensure the output directory. After that
+        start the processing of input files (and directories) one by one.
+        """
         self.check_directories()
-        self.walk_directory()
+
+        for i_file in self.input_files:
+            if os.path.isdir(i_file):
+                self.walk_directory(i_file)
+            elif os.path.isfile(i_file):
+                self.process_file(i_file)
+            else:
+                printer.error('Input file "%s" is not regular file or directory, continuing ...' % i_file)
+                continue
+
 
     def check_directories(self):
         """
-        Check if input and output directories exist.
-        If input does not exists it exits the process
-        If output does not exists it tries to create it or exit with error
+        Check if all input files/dirs and output directories exist.
+        If output does not exists it tries to create it or it exits with an error.
         """
-        if not os.path.isdir(self.input_dir) or not os.path.exists(self.input_dir):
-            printer.error('Input directory "%s" does not exist or cannot be accessed' % self.input_dir)
-            return
+        for i_file in self.input_files:
+            if not os.path.exists(i_file):
+                printer.error('Input file "%s" does not exist or cannot be accessed' % i_file)
+                return
+
         if not os.path.exists(self.output_dir):
             printer.line('Output directory "%s" does not exist, creating now' % self.output_dir)
             try:
@@ -61,11 +76,11 @@ class Phockup:
             except Exception:
                 printer.error('Cannot create output directory. No write access!')
 
-    def walk_directory(self):
+    def walk_directory(self, i_directory):
         """
-        Walk input directory recursively and call process_file for each file except the ignored ones
+        Walk given directory recursively and call process_file for each file except the ignored ones
         """
-        for root, _, files in os.walk(self.input_dir):
+        for root, _, files in os.walk(i_directory):
             files.sort()
             for filename in files:
 
