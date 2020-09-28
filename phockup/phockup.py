@@ -39,6 +39,13 @@ class Phockup:
     def __call__(self):
         return self.process()
 
+    def dry(self, fnc, *args, **kwargs):
+        if self.dry_run:
+            log.debug("Dry-run: Not calling function: %s(%s, %s)", fnc.__name__, args, kwargs)
+            return
+
+        fnc(*args, **kwargs)
+
     def process(self):
         """
         Check input data and ensure the output directory. After that
@@ -79,12 +86,10 @@ class Phockup:
             raise PhockupError("There was no valid file on the input, exiting.")
 
         log.debug("Ensuring output directory: %s", self.output_dir)
-#        if not os.path.exists(self.output_dir) and at_least_one_valid_file:
         if at_least_one_valid_file:
             try:
-                if not self.dry_run:
-                    os.makedirs(self.output_dir)
-                    log.info("Output directory was created: %s", self.output_dir)
+                self.dry(os.makedirs, self.output_dir)
+                log.info("Output directory was created: %s", self.output_dir)
             except OSError as e:
                 if e.errno == errno.EEXIST:
                     log.info("Output directory already exist: %s. Using existing directory.", self.output_dir)
@@ -166,8 +171,7 @@ class Phockup:
         fullpath = os.path.sep.join(path)
 
         try:
-            if not self.dry_run:
-                os.makedirs(fullpath)
+            self.dry(os.makedirs, fullpath)
         except OSError as e:
             if e.errno == errno.EEXIST:
                 log.debug("Child directory already exist: %s. Using existing directory.", fullpath)
@@ -228,17 +232,15 @@ class Phockup:
             else:
                 if self.move:
                     try:
-                        if not self.dry_run:
-                            shutil.move(filename, target_file)
+                        self.dry(shutil.move, filename, target_file)
                     except FileNotFoundError:
                         log.warning('%s => skipped, no such file or directory', filename)
                         break
-                elif self.link and not self.dry_run:
-                    os.link(filename, target_file)
+                elif self.link:
+                    self.dry(os.link, filename, target_file)
                 else:
                     try:
-                        if not self.dry_run:
-                            shutil.copy2(filename, target_file)
+                        self.dry(shutil.copy2, filename, target_file)
                     except FileNotFoundError:
                         log.warning('%s => skipped, no such file or directory', filename)
                         break
@@ -294,10 +296,9 @@ class Phockup:
             xmp_path = os.path.sep.join([output, target])
             log.info("%s => %s", original, xmp_path)
 
-            if not self.dry_run:
-                if self.move:
-                    shutil.move(original, xmp_path)
-                elif self.link:
-                    os.link(original, xmp_path)
-                else:
-                    shutil.copy2(original, xmp_path)
+            if self.move:
+                self.dry(shutil.move, original, xmp_path)
+            elif self.link:
+                self.dry(os.link, original, xmp_path)
+            else:
+                self.dry(shutil.copy2, original, xmp_path)
