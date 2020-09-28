@@ -59,15 +59,20 @@ The `-v ~/Pictures:/mnt` part of the command mounts your `~/Pictures` directory 
 ## Usage
 Organize photos from one directory into another
 ```
-phockup INPUTDIR OUTPUTDIR
+phockup INPUTFILE [INPUTFILE ...] OUTPUTDIR
 ```
 
-`INPUTDIR` is the directory where your photos are located.
-`OUTPUTDIR` is the directory where your **sorted** photos will be stored. It could be a new not existing directory.
+`INPUTFILE` is a photo file or a directory where your photos are located. You can provide **multiple** input directories or files.
+`OUTPUTDIR` is the directory where your **sorted** photos will be stored. It could be a new nonexistent directory.
 
-Example:
+Examples:
+
 ```
 phockup ~/Pictures/camera ~/Pictures/sorted
+```
+
+```
+phockup ~/Pictures/*.jpg ~/Videos/vacation ~/photo.jpg ~/Pictures/sorted
 ```
 
 ### Date format
