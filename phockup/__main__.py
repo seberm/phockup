@@ -232,7 +232,6 @@ To get all date fields available for a file, do:
         log.warning("DRY-RUN: Dry-run mode active! Not making any changes.")
 
     pho = Phockup(
-        args.input_files,
         args.output_dir,
         dir_format=os.path.sep.join(DEFAULT_DIR_FORMAT),
         move=args.move,
@@ -250,7 +249,7 @@ To get all date fields available for a file, do:
     )
 
     try:
-        pho.process()
+        pho.process(input_files=args.input_files)
     except PhockupError as e:
         log.error(e)
         return 99

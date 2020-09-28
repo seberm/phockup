@@ -15,13 +15,9 @@ log = logging.getLogger(__name__)
 
 
 class Phockup:
-    def __init__(self, input_files, output_dir, **args):
-        # Expand all input files
-        # FIXME: remove input_files argument, add it into self.process(input_files) - improve the API
-        input_files = [os.path.expanduser(i_file) for i_file in input_files]
+    def __init__(self, output_dir, **args):
         output_dir = os.path.expanduser(output_dir)
 
-        self.input_files = input_files
         self.output_dir = output_dir
         self.dir_format = args.get('dir_format', os.path.sep.join(['%Y', '%m', '%d']))
         self.move = args.get('move', False)
@@ -46,14 +42,17 @@ class Phockup:
 
         fnc(*args, **kwargs)
 
-    def process(self):
+    def process(self, input_files):
         """
         Check input data and ensure the output directory. After that
         start the processing of input files (and directories) one by one.
         """
-        self.check_directories()
+        # Expand all input files
+        i_files = [os.path.expanduser(i_file) for i_file in input_files]
 
-        for i_file in self.input_files:
+        self.check_directories(i_files, self.output_dir)
+
+        for i_file in i_files:
             if os.path.isdir(i_file):
                 self.walk_directory(i_file)
             elif os.path.isfile(i_file):
@@ -62,20 +61,20 @@ class Phockup:
                 log.warning("Input file '%s' is not regular file or directory, continuing ...", i_file)
                 continue
 
-    def check_directories(self):
+    def check_directories(self, input_files, output_dir):
         """
         Check if all input files/dirs and output directories exist.
         If output does not exists it tries to create it or it exits with an error.
         """
         log.debug("Checking input files and directories")
-        if not self.input_files:
+        if not input_files:
             raise PhockupError("No Input files or directories were provided.")
 
         # Create the output_dir when there is at least *one* valid file or directory
         # on the input
         at_least_one_valid_file = False
 
-        for i_file in self.input_files:
+        for i_file in input_files:
             if not os.path.exists(i_file):
                 log.warning("Input file does not exist or cannot be accessed: %s, continuing ...", i_file)
                 continue
@@ -85,17 +84,17 @@ class Phockup:
         if not at_least_one_valid_file:
             raise PhockupError("There was no valid file on the input, exiting.")
 
-        log.debug("Ensuring output directory: %s", self.output_dir)
+        log.debug("Ensuring output directory: %s", output_dir)
         if at_least_one_valid_file:
             try:
-                self.dry(os.makedirs, self.output_dir)
-                log.info("Output directory was created: %s", self.output_dir)
+                self.dry(os.makedirs, output_dir)
+                log.info("Output directory was created: %s", output_dir)
             except OSError as e:
                 if e.errno == errno.EEXIST:
-                    log.info("Output directory already exist: %s. Using existing directory.", self.output_dir)
+                    log.info("Output directory already exist: %s. Using existing directory.", output_dir)
                 else:
                     log.error(e)
-                    raise PhockupError("There was an error when creating directory: %s" % self.output_dir)
+                    raise PhockupError("There was an error when creating directory: %s" % output_dir)
 
     def walk_directory(self, i_directory):
         """
