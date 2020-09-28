@@ -76,7 +76,7 @@ class Phockup:
 
         for i_file in input_files:
             if not os.path.exists(i_file):
-                log.warning("Input file does not exist or cannot be accessed: %s, continuing ...", i_file)
+                log.warning("Input file/directory does not exist or cannot be accessed: %s, continuing ...", i_file)
                 continue
 
             at_least_one_valid_file = True
