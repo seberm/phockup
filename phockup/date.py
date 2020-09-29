@@ -122,6 +122,12 @@ class Date:
         if timestamp:
             return self.from_timestamp()
 
+        # FIXME
+        return {
+            'date': None,
+            'subseconds': '',
+        }
+
     def from_timestamp(self):
         date = datetime.fromtimestamp(os.path.getmtime(self.filename))
         return {
