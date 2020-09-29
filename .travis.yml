@@ -23,6 +23,13 @@ matrix:
     - python: 3.6
       env: TOXENV=py36
 
+    - os: windows
+      language: sh
+      python: "3.7"
+      before_install:
+        - choco install python3
+        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+
   allow_failures:
     # For now, allow the linters to fail
     - env: TOXENV=linters
