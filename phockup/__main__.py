@@ -153,10 +153,10 @@ nevertheless it can be useful if no other date information can be obtained.
         "--regex",
         action="store",
         type=re.compile,
-        help="""Specify date format for date extraction from filenames if there is no EXIF date information.
+        help=r"""Specify date format for date extraction from filenames if there is no EXIF date information.
 
 Example:
-    {regex}
+    (?P<day>\d{2})\.(?P<month>\d{2})\.(?P<year>\d{4})[_-]?(?P<hour>\d{2})\.(?P<minute>\d{2})\.(?P<second>\d{2})")
     can be used to extract the date from file names like the following IMG_27.01.2015-19.20.00.jpg.
         """,
     )
@@ -172,7 +172,7 @@ Example:
         "--exclude-regex",
         action="append",
         type=str,
-        help="Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\\.jpg').",
+        help=r"Exclude all files where their filename matches specified regex (e.g. 'image-[0-9]{2}\.jpg').",
         default=DEFAULT_IGNORED_FILES,
     )
 
