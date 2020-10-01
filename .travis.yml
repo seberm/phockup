@@ -23,9 +23,9 @@ matrix:
       python: "3.8"
       env:
         - TOXENV=win-py38
+        - PATH="/c/Python:/c/Python/Scripts:$PATH"
       before_install:
         - choco install python3 --version 3.8.6 --params "/InstallDir:C:\\Python"
-        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - echo "Current PATH=$PATH"
         - python -m pip install --upgrade pip wheel
 
@@ -34,9 +34,9 @@ matrix:
       python: "3.7"
       env:
         - TOXENV=win-py37
+        - PATH="/c/Python:/c/Python/Scripts:$PATH"
       before_install:
         - choco install python3 --version 3.7.7 --params "/InstallDir:C:\\Python"
-        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - echo "Current PATH=$PATH"
         - python -m pip install --upgrade pip wheel
 
