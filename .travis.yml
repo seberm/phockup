@@ -29,7 +29,7 @@ matrix:
       env:
         - TOXENV=win-py37
       before_install:
-        - choco install python3 --params "/InstallDir:C:\\Python"
+        - choco install python3 --version 3.7.7 --params "/InstallDir:C:\\Python"
         - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - echo "Current PATH=$PATH"
         - python -m pip install --upgrade pip wheel
