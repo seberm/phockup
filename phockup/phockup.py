@@ -272,6 +272,7 @@ class Phockup:
                 target_file_name = target_file_name.lower()
             target_file_path = os.path.sep.join([output, target_file_name])
         else:
+            log.info("No EXIF data found, getting datetime information from file modification.")
             output = self.get_output_dir()
             target_file_name = os.path.basename(filename)
             target_file_path = os.path.sep.join([output, target_file_name])
