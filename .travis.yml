@@ -30,9 +30,11 @@ matrix:
         - TOXENV=win-py37
         - PATH=/c/Python37:/c/Python37/Scripts:$PATH
       before_install:
-        - choco install python3
+        - choco install python
         - echo "Current PATH=$PATH"
         - python -m pip install --upgrade pip
+        #- virtualenv $HOME/venv
+        #- source $HOME/venv/Scripts/activate
 
   allow_failures:
     # For now, allow the linters to fail
