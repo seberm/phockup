@@ -1,12 +1,6 @@
 language: python
 dist: xenial
 
-before_install:
-  - sudo apt-get install -y libimage-exiftool-perl
-
-install:
-  - pip install tox
-
 matrix:
   include:
     - stage: Lint and Code Style
@@ -23,6 +17,18 @@ matrix:
     - python: 3.6
       env: TOXENV=py36
 
+
+    - os: windows
+      language: sh
+      python: "3.8"
+      env:
+        - TOXENV=win-py38
+      before_install:
+        - choco install python3 --version 3.8.6 --params "/InstallDir:C:\\Python"
+        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
+        - echo "Current PATH=$PATH"
+        - python -m pip install --upgrade pip wheel
+
     - os: windows
       language: sh
       python: "3.7"
@@ -34,13 +40,16 @@ matrix:
         - echo "Current PATH=$PATH"
         - python -m pip install --upgrade pip wheel
 
-        #- virtualenv $HOME/venv
-        #- source $HOME/venv/Scripts/activate
-
   allow_failures:
     # For now, allow the linters to fail
     - env: TOXENV=linters
     - env: TOXENV=win-py37
+
+before_install:
+  - sudo apt-get install -y libimage-exiftool-perl
+
+install:
+  - pip install tox
 
 script:
   - echo "TOXENV is $TOXENV"
