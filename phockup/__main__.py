@@ -124,10 +124,13 @@ This is useful when working with working structure and want to create YYYY/MM/DD
     )
 
     parser.add_argument(
-        "-o",
-        "--original-names",
-        action="store_true",
-        help="Organize the files in selected format or using the default year/month/day format but keep the original filenames.",
+        "--rename",
+        action="store",
+        nargs="?",
+        metavar="FORMAT",
+        type=Date().parse,
+        help=r"The program will not rename the target file by default. With this option enabled the program renames the target file to selected format.",
+        const="%Y%m%d-%H%M%S",
     )
 
     parser.add_argument(
@@ -238,7 +241,7 @@ To get all date fields available for a file, do:
         move=args.move,
         link=args.link,
         date_regex=args.regex,
-        original_filenames=args.original_names,
+        rename=args.rename,
         timestamp=args.timestamp,
         date_field=args.date_field,
         dry_run=args.dry_run,
