@@ -9,17 +9,6 @@ class Date:
 
     def parse(self, date):
         replacements = [
-            #("mm", "%M",),    # 35 (minute)
-            #("YYYY", "%Y",),  # 2017 (year)
-            #("YY", "%y",),    # 17 (year)
-            #("m", "%b",),     # Dec (month)
-            #("MM", "%m",),    # 12 (month)
-            #("M", "%B",),     # December (month)
-            #("DDD", "%j",),   # 123 (day or year)
-            #("DD", "%d",),    # 25 (day)
-            #("HH", "%H",),    # 08 (hour)
-            #("ss", "%S",),    # 56 (second)
-
             # Keep following seperator replacements due to win/linux platform compatibility
             ("\\", os.path.sep,),  # path separator
             ("/", os.path.sep,),   # path separator

@@ -1,5 +1,4 @@
 import argparse
-import os
 import sys
 import re
 import logging
@@ -18,6 +17,7 @@ log = logging.getLogger(__name__)
 
 
 DEFAULT_LOGGING_MODE = "WARNING"
+DEFAULT_RENAME_FORMAT = "%Y%m%d-%H%M%S"
 
 PROGRAM_DESCRIPTION = """Media sorting tool to organize photos and videos from your camera in folders by year, month and day.
 The software will collect all files from the input and copy them to the output directory without
@@ -34,7 +34,6 @@ $ phockup ~/Pictures/*.jpg ~/Videos/vacation ~/photo.jpg ~/Pictures/sorted
 $ phockup --dry-run --exclude '*.mp4' input-dir/ output-dir/
 """
 
-DEFAULT_DIR_FORMAT = ['%Y', '%m', '%d']
 DEFAULT_DIR_NAME = "unknown"
 DEFAULT_IGNORED_FILES = [
     # Default windows files
@@ -77,28 +76,21 @@ def main():
     )
 
     parser.add_argument(
-        "-d",
         "--date",
         action="store",
         type=Date().parse,
-        help="""Specify date format for OUTPUTDIR directories.
+        default="%Y/%m/%d",
+        help="""Specify date format in strftime format for OUTPUTDIR directories.
 You can choose different year format (e.g. 17 instead of 2017) or decide to
 skip the day directories and have all photos sorted in year/month.
 
-Supported formats:
-    YYYY - 2016, 2017 ...
-    YY   - 16, 17 ...
-    MM   - 07, 08, 09 ...
-    M    - July, August, September ...
-    m    - Jul, Aug, Sept ...
-    DD   - 27, 28, 29 ... (day of month)
-    DDD  - 123, 158, 365 ... (day of year)
-
 Example:
-    YYYY/MM/DD -> 2011/07/17
-    YYYY/M/DD  -> 2011/July/17
-    YYYY/m/DD  -> 2011/Jul/17
-    YY/m-DD    -> 11/Jul-17
+    %%Y/%%m/%%d  -> 2011/07/17
+    %%Y/%%B/%%d  -> 2011/July/17
+    %%Y/%%b/%%d  -> 2011/Jul/17
+    %%y/%%b-%%d  -> 11/Jul-17
+
+See strftime.org for more!
         """,
     )
 
@@ -129,8 +121,9 @@ This is useful when working with working structure and want to create YYYY/MM/DD
         nargs="?",
         metavar="FORMAT",
         type=Date().parse,
-        help=r"The program will not rename the target file by default. With this option enabled the program renames the target file to selected format.",
-        const="%Y%m%d-%H%M%S",
+        help="The program will not rename the target file by default. With this option enabled the program renames the target file to selected format. If you specify this option *without* a format, the program will automatically choose '%s'." % DEFAULT_RENAME_FORMAT.encode('unicode_escape'),
+        const=DEFAULT_RENAME_FORMAT,
+        default=False,
     )
 
     parser.add_argument(
@@ -237,7 +230,7 @@ To get all date fields available for a file, do:
 
     pho = Phockup(
         args.output_dir,
-        dir_format=os.path.sep.join(DEFAULT_DIR_FORMAT),
+        dir_format=args.date,
         move=args.move,
         link=args.link,
         date_regex=args.regex,
