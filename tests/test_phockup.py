@@ -1,5 +1,6 @@
 import shutil
 import os
+import sys
 import errno
 from datetime import datetime
 
@@ -9,6 +10,10 @@ from phockup.dependency import check_dependencies
 from phockup.phockup import Phockup
 # from phockup.exif import Exif
 from phockup import PhockupError
+
+
+# Do not test symlinks on Win
+HAVE_SYMLINK = sys.platform != 'win32'
 
 
 os.chdir(os.path.dirname(__file__))
@@ -69,7 +74,7 @@ def test_walking_directory():
     assert os.path.isdir(dir3)
     assert len([name for name in os.listdir(dir1) if os.path.isfile(os.path.join(dir1, name))]) == 3
     assert len([name for name in os.listdir(dir2) if os.path.isfile(os.path.join(dir2, name))]) == 1
-    assert len([name for name in os.listdir(dir3) if os.path.isfile(os.path.join(dir3, name))]) == 1
+    assert len([name for name in os.listdir(dir3) if os.path.isfile(os.path.join(dir3, name))]) == (2 if not HAVE_SYMLINK else 1)
     shutil.rmtree('output', ignore_errors=True)
 
 
@@ -132,8 +137,12 @@ def test_process_link_to_file_with_filename_date(mocker):
     mocker.patch.object(Phockup, 'check_directories')
     mocker.patch.object(Phockup, 'walk_directory')
 
-    Phockup('output').process_file(os.path.join("input", "link_to_date_20170101_010101.jpg"))
-    assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
+    if HAVE_SYMLINK:
+        Phockup('output').process_file(os.path.join("input", "link_to_date_20170101_010101.jpg"))
+        assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
+    else:
+        print("Current platform does not seem to support symlinks")
+
     shutil.rmtree('output', ignore_errors=True)
 
 
