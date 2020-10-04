@@ -131,8 +131,8 @@ This is useful when working with working structure and want to create YYYY/MM/DD
         "-t",
         "--timestamp",
         action="store_true",
-        help="""Use the timestamp of the file (last modified date) if there is no EXIF date information.
-If the user supplies a regex, it will be used if it finds a match in the filename.
+        help="""Use the last modified timestamp of the file if there is no EXIF date information.
+If the user supplies a `--regex` option, it will be used if it finds a match in the filename.
 This option is intended as "last resort" since the file modified date may not be accurate,
 nevertheless it can be useful if no other date information can be obtained.
         """,

@@ -167,7 +167,7 @@ class Phockup:
         """
         path = [self.output_dir, self.default_dir_name]
         if date:
-            path = [self.output_dir, date.date().strftime(self.dir_format)]
+            path = [self.output_dir, date.strftime(self.dir_format)]
 
         fullpath = os.path.sep.join(path)
 
@@ -190,27 +190,13 @@ class Phockup:
         if not self.rename:
             return os.path.basename(original_filename)
 
-        if not date and date.get("date") is None:
+        if not date:
             log.debug("Filename was not possible to determine from EXIF, returning original name.")
             return os.path.basename(original_filename)
 
         log.debug("Trying to rename the input file based on EXIF data: %s", original_filename)
 
-        new_filename = date["date"].strftime(self.rename)
-
-        #filename = [
-        #    '%04d' % date['date'].year,
-        #    '%02d' % date['date'].month,
-        #    '%02d' % date['date'].day,
-        #    '-',
-        #    '%02d' % date['date'].hour,
-        #    '%02d' % date['date'].minute,
-        #    '%02d' % date['date'].second,
-        #]
-
-        # FIXME: improve support of subseconds
-        if date['subseconds']:
-            new_filename += (date['subseconds'])
+        new_filename = date.strftime(self.rename)
 
         # Append the file extension
         new_filename += os.path.splitext(original_filename)[1]
@@ -274,7 +260,7 @@ class Phockup:
 
         if exif_data and 'MIMEType' in exif_data and self.is_image_or_video(exif_data['MIMEType']):
             date = Date(filename).from_exif(exif_data, self.timestamp, self.date_regex, self.date_field)
-            output = self.get_output_dir(date["date"])
+            output = self.get_output_dir(date)
             target_file_name = self.get_file_name(filename, date)
             target_file_path = os.path.sep.join([output, target_file_name])
         else:
