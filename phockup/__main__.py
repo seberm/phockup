@@ -7,7 +7,11 @@ from phockup.date import Date
 from phockup.dependency import check_dependencies
 from phockup.phockup import Phockup
 
-from phockup import PhockupError
+from phockup import (
+    PhockupError,
+    DEFAULT_LOGGING_MODE,
+    DEFAULT_RENAME_FORMAT,
+)
 
 
 __version__ = "1.5.11"
@@ -15,9 +19,6 @@ __version__ = "1.5.11"
 
 log = logging.getLogger(__name__)
 
-
-DEFAULT_LOGGING_MODE = "WARNING"
-DEFAULT_RENAME_FORMAT = "%Y%m%d-%H%M%S"
 
 PROGRAM_DESCRIPTION = """Media sorting tool to organize photos and videos from your camera in folders by year, month and day.
 The software will collect all files from the input and copy them to the output directory without
