@@ -198,9 +198,6 @@ class Phockup:
 
         new_filename = date["date"].strftime(self.rename)
 
-        # Append the file extension
-        new_filename += os.path.splitext(original_filename)[1]
-
         #filename = [
         #    '%04d' % date['date'].year,
         #    '%02d' % date['date'].month,
@@ -212,8 +209,11 @@ class Phockup:
         #]
 
         # FIXME: improve support of subseconds
-        #if date['subseconds']:
-        #    filename.append(date['subseconds'])
+        if date['subseconds']:
+            new_filename += (date['subseconds'])
+
+        # Append the file extension
+        new_filename += os.path.splitext(original_filename)[1]
 
         log.debug("Determined new filename for %s => %s", original_filename, new_filename)
         return new_filename
