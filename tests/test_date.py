@@ -2,9 +2,8 @@ import os
 import re
 from datetime import (
     datetime,
-    timezone,
-    timedelta,
 )
+from dateutil.tz import tzoffset
 from phockup.date import Date
 
 
@@ -42,7 +41,7 @@ def test_get_date_from_exif_with_timezone():
         "CreateDate": "2017-01-01 01:01:01-02:00",
     }) == datetime(
         2017, 1, 1, 1, 1, 1, 0,
-        tzinfo=timezone(timedelta(seconds=-7200)),
+        tzinfo=tzoffset(None, -7200),
     )
 
 
@@ -51,7 +50,7 @@ def test_get_date_from_exif_with_timezone_and_sub_sec():
         "SubSecCreateDate": "2019:10:06 11:02:50.575+01:00",
     }) == datetime(
         2019, 10, 6, 11, 2, 50, 575000,
-        tzinfo=timezone(timedelta(seconds=3600)),
+        tzinfo=tzoffset(None, 3600),
     )
 
 
