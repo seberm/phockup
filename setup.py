@@ -3,7 +3,7 @@
 import os
 from setuptools import setup
 
-from phockup.__main__ import __version__
+#from phockup.__main__ import __version__
 
 
 _CUR_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -13,7 +13,8 @@ with open(os.path.join(_CUR_DIR, "README.md"), "r", encoding="utf-8") as f:
 
 setup(
     name="phockup",
-    version=__version__,
+    #version=__version__,
+    version="2.0.0",
     description="Media sorting tool to organize photos and videos from your camera in folders by year, month and day. The software will collect all files from the input directory and copy them to the output directory without changing the files content. It will only rename the files and place them in the proper directory for year, month and day.",
     long_description=readme,
     author="Ivan Dokov",
@@ -45,7 +46,7 @@ setup(
         "python-dateutil",
     ],
     extras_require={
-        "test": [
+        "tests": [
             "pytest",
             "pytest-mock",
             "coverage",
