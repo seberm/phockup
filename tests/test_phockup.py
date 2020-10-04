@@ -9,7 +9,10 @@ import pytest
 from phockup.dependency import check_dependencies
 from phockup.phockup import Phockup
 # from phockup.exif import Exif
-from phockup import PhockupError
+from phockup import (
+    PhockupError,
+    DEFAULT_RENAME_FORMAT,
+)
 
 
 # Do not test symlinks on Win
@@ -64,7 +67,7 @@ def test_error_for_no_write_access_when_creating_output_dir(mocker, capsys):
 
 def test_walking_directory():
     shutil.rmtree('output', ignore_errors=True)
-    Phockup('output').process(['input'])
+    Phockup('output', rename=DEFAULT_RENAME_FORMAT).process(['input'])
 
     dir1 = os.path.join('output', '2017', '01', '01')
     dir2 = os.path.join('output', '2017', '10', '06')
@@ -72,6 +75,9 @@ def test_walking_directory():
     assert os.path.isdir(dir1)
     assert os.path.isdir(dir2)
     assert os.path.isdir(dir3)
+
+    # When rename is enabled, multiple target files will get the *same* name. When these files have the same checksum, it's considered as a same file and skipped. Multiple files with different name in
+    # the input directory have the same checksum, that's why the result of process is 3:
     assert len([name for name in os.listdir(dir1) if os.path.isfile(os.path.join(dir1, name))]) == 3
     assert len([name for name in os.listdir(dir2) if os.path.isfile(os.path.join(dir2, name))]) == 1
     assert len([name for name in os.listdir(dir3) if os.path.isfile(os.path.join(dir3, name))]) == (2 if not HAVE_SYMLINK else 1)
@@ -108,7 +114,7 @@ def test_get_file_name(mocker):
         "subseconds": "20",
     }
 
-    assert Phockup('out').get_file_name(os.path.join("Bar", "Foo.jpg"), date) == "20170101-01010120.jpg"
+    assert Phockup('out', rename=DEFAULT_RENAME_FORMAT).get_file_name(os.path.join("Bar", "Foo.jpg"), date) == "20170101-01010120.jpg"
 
 
 def test_get_file_name_is_original_on_exception(mocker):
@@ -138,7 +144,7 @@ def test_process_link_to_file_with_filename_date(mocker):
     mocker.patch.object(Phockup, 'walk_directory')
 
     if HAVE_SYMLINK:
-        Phockup('output').process_file(os.path.join("input", "link_to_date_20170101_010101.jpg"))
+        Phockup('output', rename=DEFAULT_RENAME_FORMAT).process_file(os.path.join("input", "link_to_date_20170101_010101.jpg"))
         assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
     else:
         print("Current platform does not seem to support symlinks")
@@ -170,7 +176,7 @@ def test_process_image_exif_date(mocker):
     mocker.patch.object(Phockup, 'check_directories')
     mocker.patch.object(Phockup, 'walk_directory')
 
-    Phockup('output').process_file(os.path.join("input", "exif.jpg"))
+    Phockup('output', rename=DEFAULT_RENAME_FORMAT).process_file(os.path.join("input", "exif.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
     shutil.rmtree('output', ignore_errors=True)
 
@@ -180,7 +186,7 @@ def test_process_image_xmp(mocker):
     mocker.patch.object(Phockup, 'check_directories')
     mocker.patch.object(Phockup, 'walk_directory')
 
-    Phockup('output').process_file(os.path.join("input", "xmp.jpg"))
+    Phockup('output', rename=DEFAULT_RENAME_FORMAT).process_file(os.path.join("input", "xmp.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg.xmp"))
     shutil.rmtree('output', ignore_errors=True)
@@ -191,7 +197,7 @@ def test_process_image_xmp_noext(mocker):
     mocker.patch.object(Phockup, 'check_directories')
     mocker.patch.object(Phockup, 'walk_directory')
 
-    Phockup('output').process_file(os.path.join("input", "xmp_noext.jpg"))
+    Phockup('output', rename=DEFAULT_RENAME_FORMAT).process_file(os.path.join("input", "xmp_noext.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.xmp"))
     shutil.rmtree('output', ignore_errors=True)
@@ -202,7 +208,7 @@ def test_process_image_xmp_ext_and_noext(mocker):
     mocker.patch.object(Phockup, 'check_directories')
     mocker.patch.object(Phockup, 'walk_directory')
 
-    Phockup('output').process_file(os.path.join("input", "xmp_ext.jpg"))
+    Phockup('output', rename=DEFAULT_RENAME_FORMAT).process_file(os.path.join("input", "xmp_ext.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.xmp"))
     assert os.path.isfile(os.path.join("output", "2017", "01", "01", "20170101-010101.jpg.xmp"))
