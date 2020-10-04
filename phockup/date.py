@@ -71,15 +71,50 @@ class Date:
         return parsed_date
 
     def from_datestring(self, datestr):
-        log.debug("Trying to parse datetime string: %s", datestr)
+        """
+        The standard EXIF date/time format is "YYYY:mm:dd HH:MM:SS", and some meta information formats such as XMP also allow sub-seconds and a timezone to be specified. The timezone format is
+        "+HH:MM", "-HH:MM" or "Z".
+
+        For example:
+            exiftool -xmp:dateTimeOriginal="2005:10:23 20:06:34.33-05:00" a.jpg
+
+        That's why we need to support multiple date/time formats.
+
+        Ref.: https://exiftool.org/faq.html
+        """
+        log.debug("Trying to parse date/time string: %s", datestr)
+
+        formats = [
+            "%Y:%m:%d %H:%M:%S",
+            "%Y:%m:%d %H:%M:%S.%f",
+
+            # FIXME: this will probably won't work, because %z == (+HHMM or -HHMM), but exiftool uses format with colon (+HH:MM or -HH:MM)
+            "%Y:%m:%d %H:%M:%S.%f%z",
+
+            # Possibly not needed, because the dateutil will handle it correctly
+            "%Y-%m-%d %H:%M:%S",
+        ]
+
         datetime_obj = None
-        try:
-            datetime_obj = parse(datestr)
-            log.debug("Parsed datetime: %s", datetime_obj)
-        except ValueError:
-            log.debug("It was not possible to parse datetime string: %s", datestr)
-        finally:
-            return datetime_obj
+        for strftime_format in formats:
+            try:
+                datetime_obj = datetime.strptime(datestr, strftime_format)
+                break
+            except ValueError as e:
+                log.debug(e)
+                log.debug("Failed to parse date/time string (tested format: %s): %s", strftime_format, datestr)
+                continue
+        else:
+            log.debug("All date/time formats were tested, trying dateutil")
+            try:
+                datetime_obj = parse(datestr)
+            except ValueError as e:
+                log.debug(e)
+                log.debug("Failed to parse date/time using dateutil")
+                datetime_obj = None
+
+        log.debug("Parsed date/time: %s", datetime_obj)
+        return datetime_obj
 
     def from_filename(self, user_regex, timestamp=None):
         # If missing datetime from EXIF data check if filename is in datetime format.
