@@ -235,8 +235,12 @@ class Phockup:
 
         while True:
             if os.path.isfile(target_file):
-                if self.checksum(filename) == self.checksum(target_file):
+                chcksum_filename = self.checksum(filename)
+                chcksum_target_file = self.checksum(target_file)
+
+                if chcksum_filename == chcksum_target_file:
                     log.warning('%s => skipped, duplicated file %s', filename, target_file)
+                    log.debug('sha256(%s) == sha256(%s) == %s', filename, target_file, chcksum_filename)
                     break
             else:
                 if self.move:
