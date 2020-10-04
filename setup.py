@@ -44,4 +44,11 @@ setup(
     install_requires=[
         "python-dateutil",
     ],
+    extras_require={
+        "test": [
+            "pytest",
+            "pytest-mock",
+            "coverage",
+        ],
+    }
 )
