@@ -1,4 +1,5 @@
 import os
+import sys
 import re
 import logging
 from datetime import datetime
@@ -88,7 +89,6 @@ class Date:
             "%Y:%m:%d %H:%M:%S",
             "%Y:%m:%d %H:%M:%S.%f",
 
-            # FIXME: this will probably won't work, because %z == (+HHMM or -HHMM), but exiftool uses format with colon (+HH:MM or -HH:MM)
             "%Y:%m:%d %H:%M:%S.%f%z",
 
             # Possibly not needed, because the dateutil will handle it correctly
@@ -97,6 +97,16 @@ class Date:
 
         datetime_obj = None
         for strftime_format in formats:
+            # Special handling of timezones to also support python v3.6. We must remove ':' from timezone (%z).
+            # Note: The python version check is not needed, we can strip the colon for all pythons.
+            #
+            # Ref.: https://stackoverflow.com/questions/57995998/timezone-offset-in-datetime-format-in-python-3-6
+            if f"{sys.version_info.major}.{sys.version_info.minor}" == "3.6":
+                reg = r"[+-]\d{2}(:)\d{2}$"
+                if re.match(reg, datestr):
+                    log.debug("Python v3.6 workaround: stripping colon from timezone information for: %s", datestr)
+                    datestr = re.sub(reg, r"\1", datestr)
+
             try:
                 datetime_obj = datetime.strptime(datestr, strftime_format)
                 break
